@@ -114,26 +114,51 @@ Then use `/fx NZDUSD`, `/fx NZDUSD vol`, `/fx convert 1000 NZD USD`.
 
 ## Architecture
 
+### Local (MCP stdio server)
+
+```
+Claude Code ↔ stdio ↔ xe-mcp ──→ Xe XECD API (if credentialed)
+                                └→ Frankfurter/ECB (free fallback)
+```
+
 ```
 xe-mcp/
 ├── src/
 │   ├── index.ts              # MCP server (stdio transport)
 │   ├── xe-client.ts          # Xe XECD API wrapper (authenticated)
 │   ├── frankfurter-client.ts # Frankfurter ECB API (free fallback)
+│   ├── s3-cache.ts           # S3-backed rate history cache (Lambda use)
 │   └── tools/
 │       ├── rates.ts          # get_rate, convert, list_currencies
 │       ├── analysis.ts       # get_historical_rates, volatility_analysis, optimal_send_window
 │       ├── nzd.ts            # nzd_corridors
-│       └── correlation.ts    # correlation_analysis
-├── src/__tests__/
-│   ├── volatility.test.ts    # Math tests: vol formula, percentile logic
-│   └── correlation.test.ts   # Pearson r: edge cases, known properties
-└── .github/workflows/ci.yml  # Test → Build → verify on push
+│       ├── correlation.ts    # correlation_analysis
+│       ├── alerts.ts         # rate_alert_check
+│       └── chart.ts          # rate_chart (ASCII)
+├── lambda/
+│   ├── handler.ts            # REST Lambda — all 10 tools via POST /tool/{name}
+│   ├── alert-scheduler.ts    # CloudWatch hourly → DynamoDB scan → SQS publish
+│   └── alert-processor.ts    # SQS consumer → SES email notification
+├── src/__tests__/            # 19 unit tests (2 suites)
+├── .github/workflows/
+│   ├── ci.yml                # Test → Build → verify on push
+│   └── deploy.yml            # Test → Build → SAM deploy to AWS (ap-southeast-2)
+├── Dockerfile                # Multi-stage Alpine — local & ECS/K8s deployments
+└── template.yml              # SAM: Lambda + API Gateway + SQS + DynamoDB + S3
 ```
 
-**Data flow:** Claude Code ↔ stdio ↔ MCP server → Xe XECD API (or Frankfurter fallback) → structured text response.
+### AWS deployment (`sam deploy`)
 
-**Credential detection:** `XE_ACCOUNT_ID` + `XE_API_KEY` in env → Xe. Otherwise → Frankfurter. No config needed.
+```
+API Gateway → handler Lambda → Xe/Frankfurter → response
+CloudWatch Events (hourly) → alert-scheduler Lambda → DynamoDB → SQS
+                                                                  ↓
+                                                     alert-processor Lambda → SES email
+DynamoDB: alert configurations (userId, from, to, threshold, direction)
+S3: rate history cache (90-day TTL, reduces external API calls)
+```
+
+**Credential detection:** `XE_ACCOUNT_ID` + `XE_API_KEY` in env → Xe. Otherwise → Frankfurter. Same fallback in Lambda and locally.
 
 ---
 
