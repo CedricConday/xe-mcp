@@ -1,9 +1,14 @@
 import { convertFrom, listCurrencies } from "../xe-client.js";
+import { ffCurrentRate } from "../frankfurter-client.js";
+
+function hasXeCredentials(): boolean {
+  return !!(process.env.XE_ACCOUNT_ID && process.env.XE_API_KEY);
+}
 
 export const getRateTool = {
   name: "get_rate",
   description:
-    "Get the current mid-market exchange rate between two currencies. Uses Xe's live rate data.",
+    "Get the current mid-market exchange rate between two currencies. Uses Xe when credentials are set; falls back to Frankfurter (ECB) for free use.",
   inputSchema: {
     type: "object",
     properties: {
@@ -15,10 +20,14 @@ export const getRateTool = {
 };
 
 export async function handleGetRate(args: { from: string; to: string }): Promise<string> {
-  const result = await convertFrom(args.from, [args.to], 1);
-  const rate = result.to[0]?.mid;
-  if (rate === undefined) throw new Error("No rate returned");
-  return `1 ${args.from.toUpperCase()} = ${rate.toFixed(6)} ${args.to.toUpperCase()} (as of ${result.timestamp})`;
+  if (hasXeCredentials()) {
+    const result = await convertFrom(args.from, [args.to], 1);
+    const rate = result.to[0]?.mid;
+    if (rate === undefined) throw new Error("No rate returned");
+    return `1 ${args.from.toUpperCase()} = ${rate.toFixed(6)} ${args.to.toUpperCase()} (Xe, ${result.timestamp})`;
+  }
+  const { rate, date } = await ffCurrentRate(args.from, args.to);
+  return `1 ${args.from.toUpperCase()} = ${rate.toFixed(6)} ${args.to.toUpperCase()} (Frankfurter/ECB, ${date})`;
 }
 
 export const convertTool = {
@@ -40,24 +49,29 @@ export async function handleConvert(args: {
   to: string;
   amount: number;
 }): Promise<string> {
-  const result = await convertFrom(args.from, [args.to], args.amount);
-  const rate = result.to[0]?.mid;
-  if (rate === undefined) throw new Error("No rate returned");
-  return `${args.amount} ${args.from.toUpperCase()} = ${rate.toFixed(4)} ${args.to.toUpperCase()} (rate: ${(rate / args.amount).toFixed(6)}, timestamp: ${result.timestamp})`;
+  if (hasXeCredentials()) {
+    const result = await convertFrom(args.from, [args.to], args.amount);
+    const converted = result.to[0]?.mid;
+    if (converted === undefined) throw new Error("No rate returned");
+    return `${args.amount} ${args.from.toUpperCase()} = ${converted.toFixed(4)} ${args.to.toUpperCase()} (rate: ${(converted / args.amount).toFixed(6)}, Xe, ${result.timestamp})`;
+  }
+  const { rate, date } = await ffCurrentRate(args.from, args.to);
+  const converted = args.amount * rate;
+  return `${args.amount} ${args.from.toUpperCase()} = ${converted.toFixed(4)} ${args.to.toUpperCase()} (rate: ${rate.toFixed(6)}, Frankfurter/ECB, ${date})`;
 }
 
 export const listCurrenciesTool = {
   name: "list_currencies",
-  description: "List all currency codes supported by Xe.",
+  description: "List all currency codes supported. Requires Xe credentials.",
   inputSchema: { type: "object", properties: {} },
 };
 
 export async function handleListCurrencies(): Promise<string> {
+  if (!hasXeCredentials()) {
+    return "list_currencies requires Xe API credentials. Set XE_ACCOUNT_ID and XE_API_KEY. Common codes: NZD, USD, EUR, GBP, JPY, AUD, CAD, CHF, CNY, HKD, SGD.";
+  }
   const result = (await listCurrencies()) as {
     currencies: Array<{ iso: string; currency_name: string }>;
   };
-  const lines = result.currencies
-    .map((c) => `${c.iso}: ${c.currency_name}`)
-    .join("\n");
-  return lines;
+  return result.currencies.map((c) => `${c.iso}: ${c.currency_name}`).join("\n");
 }
