@@ -95,7 +95,7 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
         result = await handleMovingAverage(args as { from: string; to: string; periods?: number[] });
         break;
       case "pair_summary":
-        result = await handlePairSummary(args as { from: string; to: string });
+        result = await handlePairSummary(args as { from: string; to: string; days?: number });
         break;
       default:
         return err(404, `Unknown tool: ${tool}. Available: get_rate, convert, list_currencies, get_historical_rates, volatility_analysis, optimal_send_window, nzd_corridors, correlation_analysis, rate_alert_check, rate_chart, moving_average, pair_summary`);
