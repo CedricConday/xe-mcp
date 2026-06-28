@@ -8,6 +8,7 @@ import {
 
 import { getRateTool, handleGetRate, convertTool, handleConvert, listCurrenciesTool, handleListCurrencies } from "./tools/rates.js";
 import { historicalRatesTool, handleHistoricalRates, volatilityTool, handleVolatility, optimalSendTool, handleOptimalSend } from "./tools/analysis.js";
+import { nzdCorridorsTool, handleNzdCorridors } from "./tools/nzd.js";
 
 const server = new Server(
   { name: "xe-mcp", version: "0.1.0" },
@@ -22,6 +23,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     historicalRatesTool,
     volatilityTool,
     optimalSendTool,
+    nzdCorridorsTool,
   ],
 }));
 
@@ -49,6 +51,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case "optimal_send_window":
         text = await handleOptimalSend(args as { from: string; to: string; days?: number });
+        break;
+      case "nzd_corridors":
+        text = await handleNzdCorridors();
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
