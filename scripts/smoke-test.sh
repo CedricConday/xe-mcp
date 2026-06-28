@@ -40,6 +40,7 @@ call_tool "correlation_analysis" '{"pair1_from":"NZD","pair1_to":"USD","pair2_fr
 call_tool "rate_alert_check" '{"from":"NZD","to":"USD","threshold":0.58,"direction":"above"}'
 call_tool "rate_chart" '{"from":"NZD","to":"USD","days":14}'
 call_tool "moving_average" '{"from":"NZD","to":"USD","periods":[20,50]}'
+call_tool "pair_summary" '{"from":"NZD","to":"USD"}'
 
 echo ""
 echo "==================="

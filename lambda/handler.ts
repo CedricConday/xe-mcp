@@ -8,7 +8,7 @@
  */
 
 import { handleGetRate, handleConvert, handleListCurrencies } from "../src/tools/rates.js";
-import { handleHistoricalRates, handleVolatility, handleOptimalSend, handleMovingAverage } from "../src/tools/analysis.js";
+import { handleHistoricalRates, handleVolatility, handleOptimalSend, handleMovingAverage, handlePairSummary } from "../src/tools/analysis.js";
 import { handleNzdCorridors } from "../src/tools/nzd.js";
 import { handleCorrelation } from "../src/tools/correlation.js";
 import { handleRateAlertCheck } from "../src/tools/alerts.js";
@@ -94,8 +94,11 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
       case "moving_average":
         result = await handleMovingAverage(args as { from: string; to: string; periods?: number[] });
         break;
+      case "pair_summary":
+        result = await handlePairSummary(args as { from: string; to: string });
+        break;
       default:
-        return err(404, `Unknown tool: ${tool}. Available: get_rate, convert, list_currencies, get_historical_rates, volatility_analysis, optimal_send_window, nzd_corridors, correlation_analysis, rate_alert_check, rate_chart, moving_average`);
+        return err(404, `Unknown tool: ${tool}. Available: get_rate, convert, list_currencies, get_historical_rates, volatility_analysis, optimal_send_window, nzd_corridors, correlation_analysis, rate_alert_check, rate_chart, moving_average, pair_summary`);
     }
 
     return ok({ tool, result });

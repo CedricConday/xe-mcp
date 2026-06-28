@@ -12,7 +12,7 @@ npm run build          # compile TypeScript → dist/ (MCP server)
 npm run build:lambda   # compile → dist-lambda/ (Lambda handlers)
 npm run build:all      # compile both
 npm test               # run Jest unit tests (39 tests, 4 suites)
-bash scripts/smoke-test.sh  # 11/11 live tool smoke test (requires npm run build first)
+bash scripts/smoke-test.sh  # 12/12 live tool smoke test (requires npm run build first)
 ```
 
 Build must pass before any commit. Tests must pass before any PR.
@@ -21,7 +21,7 @@ Build must pass before any commit. Tests must pass before any PR.
 
 ```
 src/
-├── index.ts              # MCP server entry — 11 tools, stdio transport
+├── index.ts              # MCP server entry — 12 tools, stdio transport
 ├── xe-client.ts          # Xe XECD API wrapper (auth: HTTP Basic)
 ├── frankfurter-client.ts # ECB fallback (free, no auth)
 ├── s3-cache.ts           # S3-backed rate history cache (Lambda use)
@@ -34,7 +34,7 @@ src/
     └── chart.ts          # rate_chart
 
 lambda/
-├── handler.ts            # REST API — all 11 tools via POST /tool/{name}
+├── handler.ts            # REST API — all 12 tools via POST /tool/{name}
 ├── alert-scheduler.ts    # CloudWatch hourly → DynamoDB → SQS
 └── alert-processor.ts    # SQS consumer → SES email
 ```

@@ -2,7 +2,7 @@
 
 An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/) — brings live FX rates, historical analysis, and quant-flavored tools directly into Claude Code, Claude Desktop, and any MCP-compatible AI tool.
 
-**Works out of the box with zero credentials** — falls back to Frankfurter (ECB data) automatically. Plug in Xe API keys to switch to Xe's live data.
+**Works out of the box with zero credentials** — falls back to Frankfurter (ECB data) automatically. Plug in Xe API keys to switch to Xe's live data. All 12 tools work without credentials.
 
 ---
 
@@ -21,6 +21,7 @@ An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/)
 | `rate_alert_check` | Check if a rate has crossed a threshold — returns triggered: YES/NO + distance |
 | `rate_chart` | ASCII line chart of a currency pair's rate history in the terminal |
 | `moving_average` | SMA(20/50/200) with current rate and % distance from each average |
+| `pair_summary` | One-call morning briefing: rate + range + vol + send verdict + SMA(20) |
 
 ---
 
@@ -193,7 +194,7 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 | Requirement | Where it lives |
 |---|---|
 | TypeScript | `src/`, `lambda/` — full codebase |
-| MCP / agentic tooling | `src/index.ts` — stdio transport, 10 registered tools |
+| MCP / agentic tooling | `src/index.ts` — stdio transport, 12 registered tools |
 | AWS Lambda | `lambda/handler.ts` — REST API over all 10 tools |
 | AWS SQS | `lambda/alert-scheduler.ts` → publishes; `lambda/alert-processor.ts` → consumes |
 | AWS DynamoDB | `lambda/alert-scheduler.ts` — scans `AlertsTable`; SAM GSI on `userId` |
