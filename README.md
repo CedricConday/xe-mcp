@@ -20,6 +20,7 @@ An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/)
 | `correlation_analysis` | Pearson r of daily log-returns between two currency pairs |
 | `rate_alert_check` | Check if a rate has crossed a threshold — returns triggered: YES/NO + distance |
 | `rate_chart` | ASCII line chart of a currency pair's rate history in the terminal |
+| `moving_average` | SMA(20/50/200) with current rate and % distance from each average |
 
 ---
 
