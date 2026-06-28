@@ -198,7 +198,7 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 | AWS SQS | `lambda/alert-scheduler.ts` → publishes; `lambda/alert-processor.ts` → consumes |
 | AWS DynamoDB | `lambda/alert-scheduler.ts` — scans `AlertsTable`; SAM GSI on `userId` |
 | AWS S3 | `src/s3-cache.ts` — rate history cache; bucket in `template.yml` |
-| SQLite (local) | `src/sqlite-store.ts` — optional rate history cache via `RATE_DB_PATH`; same schema works on PostgreSQL |
+| SQLite (local) | `src/sqlite-store.ts` — rate history cache (`RATE_DB_PATH`); live in `fetchHistoricalSeries` — cache hits skip API, misses store to DB; same schema works on PostgreSQL |
 | AWS SES | `lambda/alert-processor.ts` — sends email on alert trigger |
 | AWS API Gateway | `template.yml` — wired to `XeMcpFunction` |
 | CloudWatch Events | `template.yml` — hourly schedule trigger on `AlertSchedulerFunction` |
