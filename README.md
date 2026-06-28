@@ -26,6 +26,8 @@ An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/)
 
 ## Live output examples
 
+All examples below use Frankfurter/ECB — no API key required.
+
 ```
 > get_rate NZD USD
 1 NZD = 0.564940 USD (Frankfurter/ECB, 2026-06-26)
@@ -38,6 +40,13 @@ Current rate:  0.564940
 Percentile:    14th (3/21 historical days were lower)
 Verdict:       UNFAVOURABLE — bottom quartile
 Timestamp:     2026-06-26
+
+> moving_average NZD USD
+NZD/USD — moving averages (Frankfurter/ECB)
+Current rate: 0.564940
+
+SMA(20):  0.579758  (current is 2.56% below)
+SMA(50):  insufficient data (need 50 days, have 36)
 
 > volatility_analysis NZD USD 30
 NZD/USD — 30-day volatility (Frankfurter/ECB)
@@ -52,6 +61,20 @@ Correlation: NZD/USD vs AUD/USD (Frankfurter/ECB, 30d)
 Pearson r:       0.8553
 Interpretation:  strong positive
 Data points:     20 aligned trading days
+
+> rate_chart NZD USD 30
+NZD/USD — last 30 trading days (Frankfurter/ECB)
+  0.5974 │●●               
+         │  ●●             
+         │    ●●●          
+         │       ●●        
+  0.5806 │         ●●│   │ 
+         │               ●●│
+         │                 ●│
+         │                  ●│
+  0.5639 │                   ●●●
+         └─────────────────────
+          05-29     06-12  06-26
 ```
 
 ---
@@ -60,7 +83,7 @@ Data points:     20 aligned trading days
 
 ### Zero-credential mode (Frankfurter/ECB)
 
-All tools except `list_currencies` work with no API keys using free ECB data via [Frankfurter](https://www.frankfurter.app/).
+All 11 tools work with no API keys using free ECB data via [Frankfurter](https://www.frankfurter.app/). `list_currencies` returns a built-in common currency list; with Xe credentials it returns the full ~170 currency list.
 
 ```bash
 git clone https://github.com/CedricConday/xe-mcp
