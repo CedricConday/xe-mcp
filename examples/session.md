@@ -111,14 +111,56 @@ watch -n 3600 'echo {...} | node dist/index.js'
 
 ---
 
+**Q: Where does the current rate sit relative to the 20-day and 50-day moving averages?**
+
+```
+> moving_average NZD USD
+
+NZD/USD — moving averages (Frankfurter/ECB)
+Current rate: 0.564940
+
+SMA(20):  0.579758  (current is 2.56% below)
+SMA(50):  insufficient data (need 50 days, have 36)
+```
+
+→ Claude Code: "NZD/USD is 2.6% below its 20-day average — consistent with the bottom-quartile reading from optimal_send_window. A recovery toward the 20-day mean would add ~0.015 to the rate."
+
+---
+
+**Q: Show me a chart of the last 30 days.**
+
+```
+> rate_chart NZD USD 30
+
+NZD/USD — last 30 trading days (Frankfurter/ECB)
+  0.5974 │●●               
+         │  ●●             
+         │    ●●●          
+         │       ●●        
+  0.5806 │         ●●│   │ 
+         │               ●●│
+         │                 ●│
+         │                  ●│
+  0.5639 │                   ●●●
+         └─────────────────────
+          05-29     06-12  06-26
+```
+
+→ Claude Code: "Clear downtrend from ~0.597 in late May to ~0.565 now. The rate has lost about 3.5 cents (5.9%) in 30 days. The chart shows no reversal signal yet."
+
+---
+
 ## Setup for this session
 
 ```bash
 # Add to Claude Code
 claude mcp add xe-mcp node /path/to/xe-mcp/dist/index.js
 
-# Verify (lists all 9 tools)
+# Verify (lists all 11 tools)
 claude mcp list
+
+# Or run the demo script
+bash scripts/demo.sh
 ```
 
 No API key needed — all examples above use Frankfurter/ECB free data.
