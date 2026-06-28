@@ -38,6 +38,7 @@ call_tool "optimal_send_window" '{"from":"NZD","to":"USD","days":30}'
 call_tool "nzd_corridors" '{}'
 call_tool "correlation_analysis" '{"pair1_from":"NZD","pair1_to":"USD","pair2_from":"AUD","pair2_to":"USD","days":20}'
 call_tool "rate_alert_check" '{"from":"NZD","to":"USD","threshold":0.58,"direction":"above"}'
+call_tool "rate_chart" '{"from":"NZD","to":"USD","days":14}'
 
 echo ""
 echo "==================="

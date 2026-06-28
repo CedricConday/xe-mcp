@@ -56,7 +56,9 @@ function asciiChart(rates: { date: string; rate: number }[], height = 10): strin
   const firstDate = rates[0].date.slice(5); // MM-DD
   const midDate = rates[Math.floor(rates.length / 2)].date.slice(5);
   const lastDate = rates[rates.length - 1].date.slice(5);
-  const dateLine = `          ${firstDate}${" ".repeat(Math.floor(rates.length / 2) - firstDate.length)}${midDate}${" ".repeat(rates.length - Math.floor(rates.length / 2) - midDate.length - lastDate.length + 1)}${lastDate}`;
+  const midOffset = Math.max(0, Math.floor(rates.length / 2) - firstDate.length);
+  const lastOffset = Math.max(0, rates.length - Math.floor(rates.length / 2) - midDate.length - lastDate.length + 1);
+  const dateLine = `          ${firstDate}${" ".repeat(midOffset)}${midDate}${" ".repeat(lastOffset)}${lastDate}`;
   lines.push(dateLine);
 
   return lines.join("\n");
