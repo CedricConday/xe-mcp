@@ -27,6 +27,14 @@
     "claude-code"
   ],
   "license": "MIT",
+  "files": ["dist", "README.md", ".env.example", ".claude"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CedricConday/xe-mcp.git"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },

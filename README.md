@@ -18,6 +18,7 @@ An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/)
 | `optimal_send_window` | Percentile rank of today's rate in the N-day distribution + verdict |
 | `nzd_corridors` | NZD snapshot across USD, AUD, EUR, GBP, JPY, SGD, CNY in one call |
 | `correlation_analysis` | Pearson r of daily log-returns between two currency pairs |
+| `rate_alert_check` | Check if a rate has crossed a threshold — returns triggered: YES/NO + distance |
 
 ---
 
