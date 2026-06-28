@@ -12,7 +12,7 @@ An MCP server for the [Xe Currency Data API](https://www.xe.com/xecurrencydata/)
 |---|---|
 | `get_rate` | Live mid-market rate between any two currencies |
 | `convert` | Convert an amount at the current rate |
-| `list_currencies` | All Xe-supported currencies (requires Xe key) |
+| `list_currencies` | Common currencies (built-in); full Xe list (~170 currencies) with Xe key |
 | `get_historical_rates` | Daily rates for a currency pair over N days |
 | `volatility_analysis` | Daily std-dev + annualised vol — log-return methodology (FX options standard) |
 | `optimal_send_window` | Percentile rank of today's rate in the N-day distribution + verdict |
