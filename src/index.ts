@@ -11,6 +11,7 @@ import { historicalRatesTool, handleHistoricalRates, volatilityTool, handleVolat
 import { nzdCorridorsTool, handleNzdCorridors } from "./tools/nzd.js";
 import { correlationTool, handleCorrelation } from "./tools/correlation.js";
 import { rateAlertCheckTool, handleRateAlertCheck } from "./tools/alerts.js";
+import { rateChartTool, handleRateChart } from "./tools/chart.js";
 
 const server = new Server(
   { name: "xe-mcp", version: "0.1.0" },
@@ -28,6 +29,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     nzdCorridorsTool,
     correlationTool,
     rateAlertCheckTool,
+    rateChartTool,
   ],
 }));
 
@@ -64,6 +66,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case "rate_alert_check":
         text = await handleRateAlertCheck(args as { from: string; to: string; threshold: number; direction: "above" | "below" });
+        break;
+      case "rate_chart":
+        text = await handleRateChart(args as { from: string; to: string; days?: number });
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
