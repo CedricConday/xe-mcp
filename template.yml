@@ -14,6 +14,7 @@ Globals:
         XE_API_KEY: !Ref XeApiKey
         ALERTS_TABLE: !Ref AlertsTable
         ALERT_QUEUE_URL: !Ref AlertQueue
+        CACHE_BUCKET: !Ref RateHistoryBucket
 
 Parameters:
   XeAccountId:
@@ -66,6 +67,10 @@ Resources:
             TableName: !Ref AlertsTable
         - SQSSendMessagePolicy:
             QueueName: !GetAtt AlertQueue.QueueName
+        - S3WritePolicy:
+            BucketName: !Ref RateHistoryBucket
+        - S3ReadPolicy:
+            BucketName: !Ref RateHistoryBucket
       Events:
         Hourly:
           Type: Schedule
@@ -106,6 +111,22 @@ Resources:
       QueueName: xe-mcp-alerts-dlq
       MessageRetentionPeriod: 604800
 
+  # ── S3: rate history cache ────────────────────────────────────────────────────
+  RateHistoryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "xe-mcp-rate-cache-${AWS::AccountId}"
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldCache
+            Status: Enabled
+            ExpirationInDays: 90
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
   # ── DynamoDB: alert configuration table ──────────────────────────────────────
   AlertsTable:
     Type: AWS::DynamoDB::Table
@@ -138,3 +159,6 @@ Outputs:
   AlertsTableName:
     Description: DynamoDB alerts table name
     Value: !Ref AlertsTable
+  CacheBucketName:
+    Description: S3 rate history cache bucket
+    Value: !Ref RateHistoryBucket
