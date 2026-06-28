@@ -60,15 +60,29 @@ export async function handleConvert(args: {
   return `${args.amount} ${args.from.toUpperCase()} = ${converted.toFixed(4)} ${args.to.toUpperCase()} (rate: ${rate.toFixed(6)}, Frankfurter/ECB, ${date})`;
 }
 
+const COMMON_CURRENCIES: Record<string, string> = {
+  NZD: "New Zealand Dollar", USD: "US Dollar", EUR: "Euro", GBP: "British Pound",
+  JPY: "Japanese Yen", AUD: "Australian Dollar", CAD: "Canadian Dollar",
+  CHF: "Swiss Franc", CNY: "Chinese Yuan", HKD: "Hong Kong Dollar",
+  SGD: "Singapore Dollar", SEK: "Swedish Krona", NOK: "Norwegian Krone",
+  DKK: "Danish Krone", MXN: "Mexican Peso", BRL: "Brazilian Real",
+  INR: "Indian Rupee", KRW: "South Korean Won", ZAR: "South African Rand",
+  IDR: "Indonesian Rupiah", THB: "Thai Baht", MYR: "Malaysian Ringgit",
+  PHP: "Philippine Peso", AED: "UAE Dirham", SAR: "Saudi Riyal",
+  TWD: "Taiwan Dollar", PLN: "Polish Zloty", CZK: "Czech Koruna",
+  HUF: "Hungarian Forint", ILS: "Israeli Shekel",
+};
+
 export const listCurrenciesTool = {
   name: "list_currencies",
-  description: "List all currency codes supported. Requires Xe credentials.",
+  description: "List currency codes. Returns common currencies without credentials; the full Xe list (~170 currencies) requires Xe credentials.",
   inputSchema: { type: "object", properties: {} },
 };
 
 export async function handleListCurrencies(): Promise<string> {
   if (!hasXeCredentials()) {
-    return "list_currencies requires Xe API credentials. Set XE_ACCOUNT_ID and XE_API_KEY. Common codes: NZD, USD, EUR, GBP, JPY, AUD, CAD, CHF, CNY, HKD, SGD.";
+    const lines = Object.entries(COMMON_CURRENCIES).map(([iso, name]) => `${iso}: ${name}`);
+    return `Common currencies (source: built-in, Xe credentials needed for full list)\n\n${lines.join("\n")}`;
   }
   const result = (await listCurrencies()) as {
     currencies: Array<{ iso: string; currency_name: string }>;
