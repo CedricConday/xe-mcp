@@ -162,6 +162,28 @@ S3: rate history cache (90-day TTL, reduces external API calls)
 
 ---
 
+## Stack coverage
+
+Built to match the full-stack requirements stated in Xe.com's developer role descriptions. Every item below has working code in this repo.
+
+| Requirement | Where it lives |
+|---|---|
+| TypeScript | `src/`, `lambda/` — full codebase |
+| MCP / agentic tooling | `src/index.ts` — stdio transport, 10 registered tools |
+| AWS Lambda | `lambda/handler.ts` — REST API over all 10 tools |
+| AWS SQS | `lambda/alert-scheduler.ts` → publishes; `lambda/alert-processor.ts` → consumes |
+| AWS DynamoDB | `lambda/alert-scheduler.ts` — scans `AlertsTable`; SAM GSI on `userId` |
+| AWS S3 | `src/s3-cache.ts` — rate history cache; bucket in `template.yml` |
+| AWS SES | `lambda/alert-processor.ts` — sends email on alert trigger |
+| AWS API Gateway | `template.yml` — wired to `XeMcpFunction` |
+| CloudWatch Events | `template.yml` — hourly schedule trigger on `AlertSchedulerFunction` |
+| SAM / IaC | `template.yml` — full stack as code, `sam build && sam deploy` |
+| CI/CD (GitHub Actions) | `.github/workflows/ci.yml` — test → build → verify; `deploy.yml` — deploy to ap-southeast-2 |
+| Docker | `Dockerfile` — multi-stage Alpine build for ECS / local |
+| FX domain knowledge | `optimal_send_window`, `volatility_analysis`, `correlation_analysis` — log-return methodology |
+
+---
+
 ## Tests
 
 ```bash
