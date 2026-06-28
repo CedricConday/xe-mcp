@@ -1,5 +1,6 @@
 import { historicRate, convertFrom, isoDate, daysAgo } from "../xe-client.js";
 import { ffCurrentRate, ffHistoricalRate, ffHistoricalSeries } from "../frankfurter-client.js";
+import { getCachedRate, setCachedRate, storeCached } from "../sqlite-store.js";
 
 function hasXeCredentials(): boolean {
   return !!(process.env.XE_ACCOUNT_ID && process.env.XE_API_KEY);
@@ -27,19 +28,34 @@ async function historicalRateForDate(from: string, to: string, date: string): Pr
 }
 
 async function fetchHistoricalSeries(from: string, to: string, n: number): Promise<number[]> {
+  const pair = `${from}${to}`;
+  const source = hasXeCredentials() ? "xe" : "frankfurter";
+
   if (hasXeCredentials()) {
     const rates: number[] = [];
     for (let i = n; i >= 0; i--) {
       const date = isoDate(daysAgo(i));
-      const rate = await historicalRateForDate(from, to, date);
-      if (rate !== null) rates.push(rate);
+      const cached = storeCached() ? getCachedRate(pair, date) : null;
+      if (cached !== null) {
+        rates.push(cached);
+      } else {
+        const rate = await historicalRateForDate(from, to, date);
+        if (rate !== null) {
+          if (storeCached()) setCachedRate(pair, date, rate, source);
+          rates.push(rate);
+        }
+      }
     }
     return rates;
   }
+
   // Frankfurter: fetch the whole range in one call
   const end = isoDate(new Date());
   const start = isoDate(daysAgo(n));
   const series = await ffHistoricalSeries(from, to, start, end);
+  if (storeCached()) {
+    for (const { date, rate } of series) setCachedRate(pair, date, rate, source);
+  }
   return series.map((s) => s.rate);
 }
 
