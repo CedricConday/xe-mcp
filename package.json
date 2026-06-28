@@ -1,0 +1,24 @@
+{
+  "name": "xe-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the Xe Currency Data API — real-time rates, historical data, and volatility analysis in Claude Code",
+  "main": "dist/index.js",
+  "bin": {
+    "xe-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["mcp", "xe", "currency", "fx", "exchange-rate", "claude", "claude-code"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
