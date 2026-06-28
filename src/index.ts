@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { getRateTool, handleGetRate, convertTool, handleConvert, listCurrenciesTool, handleListCurrencies } from "./tools/rates.js";
-import { historicalRatesTool, handleHistoricalRates, volatilityTool, handleVolatility, optimalSendTool, handleOptimalSend } from "./tools/analysis.js";
+import { historicalRatesTool, handleHistoricalRates, volatilityTool, handleVolatility, optimalSendTool, handleOptimalSend, movingAverageTool, handleMovingAverage } from "./tools/analysis.js";
 import { nzdCorridorsTool, handleNzdCorridors } from "./tools/nzd.js";
 import { correlationTool, handleCorrelation } from "./tools/correlation.js";
 import { rateAlertCheckTool, handleRateAlertCheck } from "./tools/alerts.js";
@@ -30,6 +30,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     correlationTool,
     rateAlertCheckTool,
     rateChartTool,
+    movingAverageTool,
   ],
 }));
 
@@ -69,6 +70,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       case "rate_chart":
         text = await handleRateChart(args as { from: string; to: string; days?: number });
+        break;
+      case "moving_average":
+        text = await handleMovingAverage(args as { from: string; to: string; periods?: number[] });
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

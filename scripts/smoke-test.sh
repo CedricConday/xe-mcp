@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke test — calls all 9 tools and shows output
+# Smoke test — calls all 11 tools and shows output
 # Run: bash scripts/smoke-test.sh
 # Requires: npm run build to have been run first
 
@@ -39,6 +39,7 @@ call_tool "nzd_corridors" '{}'
 call_tool "correlation_analysis" '{"pair1_from":"NZD","pair1_to":"USD","pair2_from":"AUD","pair2_to":"USD","days":20}'
 call_tool "rate_alert_check" '{"from":"NZD","to":"USD","threshold":0.58,"direction":"above"}'
 call_tool "rate_chart" '{"from":"NZD","to":"USD","days":14}'
+call_tool "moving_average" '{"from":"NZD","to":"USD","periods":[20,50]}'
 
 echo ""
 echo "==================="

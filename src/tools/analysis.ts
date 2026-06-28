@@ -128,6 +128,60 @@ export async function handleVolatility(args: {
   ].join("\n");
 }
 
+export const movingAverageTool = {
+  name: "moving_average",
+  description:
+    "Calculate simple moving averages (SMA) for a currency pair. Returns 20, 50, and 200-day SMAs (or custom period), current rate, and distance from each MA — useful for trend assessment.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      from: { type: "string", description: "Base currency (e.g. NZD)" },
+      to: { type: "string", description: "Quote currency (e.g. USD)" },
+      periods: {
+        type: "array",
+        items: { type: "number" },
+        description: "SMA periods to calculate (default: [20, 50, 200])",
+      },
+    },
+    required: ["from", "to"],
+  },
+};
+
+export async function handleMovingAverage(args: {
+  from: string;
+  to: string;
+  periods?: number[];
+}): Promise<string> {
+  const periods = args.periods ?? [20, 50, 200];
+  const maxPeriod = Math.min(Math.max(...periods), 200);
+  const rates = await fetchHistoricalSeries(args.from, args.to, maxPeriod);
+
+  if (rates.length < 5) return "Insufficient data to compute moving averages.";
+
+  const { rate: current } = await currentRate(args.from, args.to);
+  const source = hasXeCredentials() ? "Xe" : "Frankfurter/ECB";
+
+  const lines = [
+    `${args.from.toUpperCase()}/${args.to.toUpperCase()} — moving averages (${source})`,
+    `Current rate: ${current.toFixed(6)}`,
+    ``,
+  ];
+
+  for (const period of [...periods].sort((a, b) => a - b)) {
+    if (rates.length < period) {
+      lines.push(`SMA(${period}):  insufficient data (need ${period} days, have ${rates.length})`);
+      continue;
+    }
+    const slice = rates.slice(-period);
+    const sma = slice.reduce((a, b) => a + b, 0) / slice.length;
+    const distance = ((current - sma) / sma) * 100;
+    const signal = current > sma ? "above" : "below";
+    lines.push(`SMA(${period}):  ${sma.toFixed(6)}  (current is ${Math.abs(distance).toFixed(2)}% ${signal})`);
+  }
+
+  return lines.join("\n");
+}
+
 export const optimalSendTool = {
   name: "optimal_send_window",
   description:
