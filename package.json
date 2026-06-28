@@ -53,11 +53,16 @@
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
+    "better-sqlite3": "^12.11.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.0"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true
   }
 }
