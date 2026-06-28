@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: xe-mcp Lambda REST API — FX tools as serverless functions
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        XE_ACCOUNT_ID: !Ref XeAccountId
+        XE_API_KEY: !Ref XeApiKey
+
+Parameters:
+  XeAccountId:
+    Type: String
+    Default: ""
+    Description: Xe Currency Data API account ID (optional — uses Frankfurter if blank)
+  XeApiKey:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Xe Currency Data API key (optional)
+
+Resources:
+  XeMcpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist-lambda/
+      Handler: lambda/handler.handler
+      Description: xe-mcp — FX tools as Lambda REST endpoints
+      Events:
+        ToolApi:
+          Type: Api
+          Properties:
+            Path: /tool/{tool}
+            Method: POST
+        OptionsApi:
+          Type: Api
+          Properties:
+            Path: /tool/{tool}
+            Method: OPTIONS
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/tool/"
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt XeMcpFunction.Arn
