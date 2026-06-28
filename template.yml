@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: xe-mcp Lambda REST API — FX tools as serverless functions
+Description: xe-mcp Lambda — FX tools as serverless functions with rate alert pipeline
 
 Globals:
   Function:
@@ -12,6 +12,8 @@ Globals:
       Variables:
         XE_ACCOUNT_ID: !Ref XeAccountId
         XE_API_KEY: !Ref XeApiKey
+        ALERTS_TABLE: !Ref AlertsTable
+        ALERT_QUEUE_URL: !Ref AlertQueue
 
 Parameters:
   XeAccountId:
@@ -23,14 +25,23 @@ Parameters:
     Default: ""
     NoEcho: true
     Description: Xe Currency Data API key (optional)
+  AlertEmail:
+    Type: String
+    Default: ""
+    Description: Email address to notify when rate alerts trigger (optional)
 
 Resources:
+
+  # ── REST API Lambda ──────────────────────────────────────────────────────────
   XeMcpFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: dist-lambda/
       Handler: lambda/handler.handler
-      Description: xe-mcp — FX tools as Lambda REST endpoints
+      Description: xe-mcp REST API — all 10 FX tools
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AlertsTable
       Events:
         ToolApi:
           Type: Api
@@ -43,10 +54,87 @@ Resources:
             Path: /tool/{tool}
             Method: OPTIONS
 
+  # ── Alert Scheduler (runs every hour) ────────────────────────────────────────
+  AlertSchedulerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist-lambda/
+      Handler: lambda/alert-scheduler.handler
+      Description: Checks DynamoDB alerts table; publishes triggered alerts to SQS
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AlertsTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt AlertQueue.QueueName
+      Events:
+        Hourly:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 hour)
+            Description: Check rate alerts hourly
+
+  # ── Alert Processor (reads from SQS) ─────────────────────────────────────────
+  AlertProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist-lambda/
+      Handler: lambda/alert-processor.handler
+      Description: Reads triggered alerts from SQS; sends notification emails via SES
+      Policies:
+        - SESEmailPolicy:
+            IdentityName: !Ref AlertEmail
+      Events:
+        AlertQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt AlertQueue.Arn
+            BatchSize: 10
+
+  # ── SQS Queue ─────────────────────────────────────────────────────────────────
+  AlertQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: xe-mcp-alerts
+      MessageRetentionPeriod: 86400
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt AlertDLQ.Arn
+        maxReceiveCount: 3
+
+  AlertDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: xe-mcp-alerts-dlq
+      MessageRetentionPeriod: 604800
+
+  # ── DynamoDB: alert configuration table ──────────────────────────────────────
+  AlertsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: xe-mcp-alerts
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: alertId
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: alertId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: userId-index
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/tool/"
-  FunctionArn:
-    Description: Lambda function ARN
-    Value: !GetAtt XeMcpFunction.Arn
+  AlertQueueUrl:
+    Description: SQS alert queue URL
+    Value: !Ref AlertQueue
+  AlertsTableName:
+    Description: DynamoDB alerts table name
+    Value: !Ref AlertsTable

@@ -15,7 +15,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.ts"]
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
   },
   "keywords": [
     "mcp",
@@ -27,7 +29,12 @@
     "claude-code"
   ],
   "license": "MIT",
-  "files": ["dist", "README.md", ".env.example", ".claude"],
+  "files": [
+    "dist",
+    "README.md",
+    ".env.example",
+    ".claude"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -36,6 +43,10 @@
     "url": "https://github.com/CedricConday/xe-mcp.git"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1075.0",
+    "@aws-sdk/client-ses": "^3.1075.0",
+    "@aws-sdk/client-sqs": "^3.1075.0",
+    "@aws-sdk/util-dynamodb": "^3.996.5",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
