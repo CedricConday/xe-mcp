@@ -198,6 +198,7 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 | AWS SQS | `lambda/alert-scheduler.ts` → publishes; `lambda/alert-processor.ts` → consumes |
 | AWS DynamoDB | `lambda/alert-scheduler.ts` — scans `AlertsTable`; SAM GSI on `userId` |
 | AWS S3 | `src/s3-cache.ts` — rate history cache; bucket in `template.yml` |
+| SQLite (local) | `src/sqlite-store.ts` — optional rate history cache via `RATE_DB_PATH`; same schema works on PostgreSQL |
 | AWS SES | `lambda/alert-processor.ts` — sends email on alert trigger |
 | AWS API Gateway | `template.yml` — wired to `XeMcpFunction` |
 | CloudWatch Events | `template.yml` — hourly schedule trigger on `AlertSchedulerFunction` |
@@ -212,11 +213,11 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 
 ```bash
 npm test
-# Test Suites: 3 passed
-# Tests:       31 passed
+# Test Suites: 4 passed
+# Tests:       39 passed
 ```
 
-Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), NZD/AUD co-movement sanity, SMA computation (period ordering, edge cases, distance from SMA).
+Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), NZD/AUD co-movement sanity, SMA computation (period ordering, edge cases, distance from SMA), SQLite schema (PK constraints, upsert behavior, range query ordering, index verification).
 
 ---
 
