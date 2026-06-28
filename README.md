@@ -189,11 +189,11 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 
 ```bash
 npm test
-# Test Suites: 2 passed
-# Tests:       19 passed
+# Test Suites: 3 passed
+# Tests:       31 passed
 ```
 
-Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), and NZD/AUD co-movement sanity.
+Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), NZD/AUD co-movement sanity, SMA computation (period ordering, edge cases, distance from SMA).
 
 ---
 
