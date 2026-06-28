@@ -152,11 +152,26 @@ NZD/USD — last 30 trading days (Frankfurter/ECB)
 
 ## Setup for this session
 
+```
+> pair_summary NZD USD
+NZD/USD — daily summary (Frankfurter/ECB)
+Rate:          0.564940
+30d range:     0.563860 – 0.597400
+30d percentile: 14th
+Annualised vol: 6.39%
+SMA(20):       0.579758  (-2.56%)
+Send verdict:  UNFAVOURABLE ▼
+```
+
+---
+
+## Setup
+
 ```bash
 # Add to Claude Code
 claude mcp add xe-mcp node /path/to/xe-mcp/dist/index.js
 
-# Verify (lists all 11 tools)
+# Verify (lists all 12 tools)
 claude mcp list
 
 # Or run the demo script
