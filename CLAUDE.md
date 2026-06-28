@@ -11,7 +11,7 @@ npm install            # install deps
 npm run build          # compile TypeScript → dist/ (MCP server)
 npm run build:lambda   # compile → dist-lambda/ (Lambda handlers)
 npm run build:all      # compile both
-npm test               # run Jest unit tests (39 tests, 4 suites)
+npm test               # run Jest unit tests (49 tests, 5 suites)
 bash scripts/smoke-test.sh  # 12/12 live tool smoke test (requires npm run build first)
 ```
 

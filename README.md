@@ -164,7 +164,7 @@ xe-mcp/
 │   ├── handler.ts            # REST Lambda — all 10 tools via POST /tool/{name}
 │   ├── alert-scheduler.ts    # CloudWatch hourly → DynamoDB scan → SQS publish
 │   └── alert-processor.ts    # SQS consumer → SES email notification
-├── src/__tests__/            # 39 unit tests (4 suites)
+├── src/__tests__/            # 49 unit tests (5 suites)
 ├── .github/workflows/
 │   ├── ci.yml                # Test → Build → verify on push
 │   └── deploy.yml            # Test → Build → SAM deploy to AWS (ap-southeast-2)
@@ -214,11 +214,11 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 
 ```bash
 npm test
-# Test Suites: 4 passed
-# Tests:       39 passed
+# Test Suites: 5 passed
+# Tests:       49 passed
 ```
 
-Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), NZD/AUD co-movement sanity, SMA computation (period ordering, edge cases, distance from SMA), SQLite schema (PK constraints, upsert behavior, range query ordering, index verification).
+Tests cover: zero-volatility edge cases, constant-return series, annualised vol formula (× √252), percentile distribution, Pearson r properties (perfect correlation, inverse, zero-variance), NZD/AUD co-movement sanity, SMA computation (period ordering, edge cases, distance from SMA), SQLite schema (PK constraints, upsert behavior, range query ordering, index verification), pair_summary math (percentile ranking, verdict labels, SMA(20) boundary).
 
 ---
 
