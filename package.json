@@ -8,6 +8,8 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:lambda": "tsc -p tsconfig.lambda.json",
+    "build:all": "npm run build && npm run build:lambda",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
     "test": "jest"
