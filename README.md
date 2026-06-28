@@ -163,7 +163,7 @@ xe-mcp/
 │   ├── handler.ts            # REST Lambda — all 10 tools via POST /tool/{name}
 │   ├── alert-scheduler.ts    # CloudWatch hourly → DynamoDB scan → SQS publish
 │   └── alert-processor.ts    # SQS consumer → SES email notification
-├── src/__tests__/            # 19 unit tests (2 suites)
+├── src/__tests__/            # 39 unit tests (4 suites)
 ├── .github/workflows/
 │   ├── ci.yml                # Test → Build → verify on push
 │   └── deploy.yml            # Test → Build → SAM deploy to AWS (ap-southeast-2)
