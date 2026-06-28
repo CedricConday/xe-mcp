@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# xe-mcp live demo — runs all 11 tools with real output
+# xe-mcp live demo — runs all 12 tools with real output
 # Use in interviews, presentations, or to verify everything works
 # Requires: npm run build
 
@@ -65,6 +65,10 @@ echo "── 10. Historical rates (last 7 days) ──────"
 call_tool "get_historical_rates" '{"from":"NZD","to":"USD","days":7}'
 
 echo ""
+echo "── 11. Pair summary (morning briefing) ─────"
+call_tool "pair_summary" '{"from":"NZD","to":"USD"}'
+
+echo ""
 echo "════════════════════════════════════════════"
-echo " xe-mcp · github.com/CedricConday/xe-mcp"
+echo " xe-mcp · 12 tools · github.com/CedricConday/xe-mcp"
 echo "════════════════════════════════════════════"
