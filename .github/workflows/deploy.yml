@@ -1,11 +1,10 @@
 name: Deploy to AWS
 
+# Manual-only: AWS deploy runs on demand (needs AWS_* + XE_* repo secrets),
+# not on every push. Keeps the CD pipeline as a documented artifact without
+# failing builds when cloud credentials aren't configured.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "examples/**"
+  workflow_dispatch:
 
 jobs:
   deploy:
