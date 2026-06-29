@@ -1,5 +1,6 @@
 import { ffHistoricalSeries } from "../frankfurter-client.js";
 import { historicRate, isoDate, daysAgo } from "../xe-client.js";
+import { pearsonCorrelation } from "../stats.js";
 
 function hasXeCredentials(): boolean {
   return !!(process.env.XE_ACCOUNT_ID && process.env.XE_API_KEY);
@@ -38,27 +39,6 @@ async function fetchLogReturnSeries(
     });
   }
   return logReturns;
-}
-
-function pearsonCorrelation(a: number[], b: number[]): number {
-  const n = Math.min(a.length, b.length);
-  if (n < 3) throw new Error("Need at least 3 aligned data points");
-
-  const meanA = a.slice(0, n).reduce((s, x) => s + x, 0) / n;
-  const meanB = b.slice(0, n).reduce((s, x) => s + x, 0) / n;
-
-  let num = 0, varA = 0, varB = 0;
-  for (let i = 0; i < n; i++) {
-    const da = a[i] - meanA;
-    const db = b[i] - meanB;
-    num += da * db;
-    varA += da * da;
-    varB += db * db;
-  }
-
-  const denom = Math.sqrt(varA * varB);
-  if (denom === 0) return 0;
-  return num / denom;
 }
 
 export const correlationTool = {

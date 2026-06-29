@@ -1,6 +1,7 @@
 import { historicRate, convertFrom, isoDate, daysAgo } from "../xe-client.js";
 import { ffCurrentRate, ffHistoricalRate, ffHistoricalSeries } from "../frankfurter-client.js";
 import { getCachedRate, setCachedRate, storeCached } from "../sqlite-store.js";
+import { annualisedVolatility, sma, percentileBelow } from "../stats.js";
 
 function hasXeCredentials(): boolean {
   return !!(process.env.XE_ACCOUNT_ID && process.env.XE_API_KEY);
@@ -131,12 +132,7 @@ export async function handleVolatility(args: {
 
   if (rates.length < 5) return "Insufficient data to compute volatility.";
 
-  const logReturns = rates.slice(1).map((r, i) => Math.log(r / rates[i]));
-  const mean = logReturns.reduce((a, b) => a + b, 0) / logReturns.length;
-  const variance =
-    logReturns.reduce((a, r) => a + Math.pow(r - mean, 2), 0) / (logReturns.length - 1);
-  const dailyVol = Math.sqrt(variance);
-  const annualisedVol = dailyVol * Math.sqrt(252);
+  const { dailyVol, annualisedVol } = annualisedVolatility(rates);
 
   const sorted = [...rates].sort((a, b) => a - b);
   const current = rates[rates.length - 1].toFixed(6);
@@ -201,11 +197,10 @@ export async function handleMovingAverage(args: {
       lines.push(`SMA(${period}):  insufficient data (need ${period} days, have ${rates.length})`);
       continue;
     }
-    const slice = rates.slice(-period);
-    const sma = slice.reduce((a, b) => a + b, 0) / slice.length;
-    const distance = ((current - sma) / sma) * 100;
-    const signal = current > sma ? "above" : "below";
-    lines.push(`SMA(${period}):  ${sma.toFixed(6)}  (current is ${Math.abs(distance).toFixed(2)}% ${signal})`);
+    const avg = sma(rates, period) as number;
+    const distance = ((current - avg) / avg) * 100;
+    const signal = current > avg ? "above" : "below";
+    lines.push(`SMA(${period}):  ${avg.toFixed(6)}  (current is ${Math.abs(distance).toFixed(2)}% ${signal})`);
   }
 
   return lines.join("\n");
@@ -237,10 +232,9 @@ export async function handleOptimalSend(args: {
 
   const { rate: current, timestamp } = await currentRate(args.from, args.to);
   const sorted = [...historicalRates].sort((a, b) => a - b);
-  // Count strictly-lower days, matching the "were lower" wording and the
-  // pair-summary tool (which uses `<`). See review 2026-06-29.
-  const below = sorted.filter((r) => r < current).length;
-  const percentile = Math.round((below / sorted.length) * 100);
+  // Strictly-lower percentile via the shared, unit-tested stats helper.
+  const below = historicalRates.filter((r) => r < current).length;
+  const percentile = percentileBelow(historicalRates, current);
   const mean = historicalRates.reduce((a, b) => a + b, 0) / historicalRates.length;
   const source = hasXeCredentials() ? "Xe" : "Frankfurter/ECB";
 
@@ -283,17 +277,9 @@ export async function handlePairSummary(args: { from: string; to: string; days?:
 
   const current = rates[rates.length - 1];
   const sorted = [...rates].sort((a, b) => a - b);
-  const below = sorted.filter((r) => r < current).length;
-  const percentile = Math.round((below / sorted.length) * 100);
-
-  const logReturns = rates.slice(1).map((r, i) => Math.log(r / rates[i]));
-  const mean = logReturns.reduce((a, b) => a + b, 0) / logReturns.length;
-  const variance = logReturns.reduce((a, r) => a + Math.pow(r - mean, 2), 0) / (logReturns.length - 1);
-  const annualisedVol = Math.sqrt(variance) * Math.sqrt(252);
-
-  const sma20 = rates.length >= 20
-    ? rates.slice(-20).reduce((a, b) => a + b, 0) / 20
-    : null;
+  const percentile = percentileBelow(rates, current);
+  const { annualisedVol } = annualisedVolatility(rates);
+  const sma20 = sma(rates, 20);
 
   let verdict: string;
   if (percentile >= 75) verdict = "FAVOURABLE ▲";
