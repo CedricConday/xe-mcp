@@ -4,7 +4,7 @@
   "description": "MCP server for the Xe Currency Data API — real-time rates, historical data, and volatility analysis in Claude Code",
   "main": "dist/index.js",
   "bin": {
-    "xe-mcp": "./dist/index.js"
+    "xe-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -45,7 +45,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CedricConday/xe-mcp.git"
+    "url": "git+https://github.com/CedricConday/xe-mcp.git"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1075.0",
