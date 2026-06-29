@@ -9,7 +9,7 @@
  * Usage: query before fetching from Xe/Frankfurter; cache any fetched rates.
  */
 
-import Database from "better-sqlite3";
+import type Database from "better-sqlite3";
 import path from "path";
 
 const DDL = `
@@ -30,6 +30,12 @@ function db(): Database.Database | null {
   const dbPath = process.env.RATE_DB_PATH;
   if (!dbPath) return null;
   if (!_db) {
+    // Lazy-load the native module only when the optional SQLite cache is
+    // actually enabled. better-sqlite3 is a devDependency, so importing it at
+    // module top crashed prod/Docker/Lambda boot ("Cannot find module"). See
+    // review 2026-06-29.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Database = require("better-sqlite3") as typeof import("better-sqlite3");
     _db = new Database(path.resolve(dbPath));
     _db.exec(DDL);
   }

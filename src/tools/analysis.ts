@@ -8,8 +8,14 @@ function hasXeCredentials(): boolean {
 
 async function currentRate(from: string, to: string): Promise<{ rate: number; timestamp: string }> {
   if (hasXeCredentials()) {
-    const result = await convertFrom(from, [to], 1);
-    return { rate: result.to[0]?.mid ?? (() => { throw new Error("No rate"); })(), timestamp: result.timestamp };
+    try {
+      const result = await convertFrom(from, [to], 1);
+      const mid = result.to[0]?.mid;
+      if (mid != null) return { rate: mid, timestamp: result.timestamp };
+      // Xe returned no usable rate — fall through to Frankfurter.
+    } catch {
+      // Xe failed (network / 4xx / 5xx / rate-limit) — fall through to Frankfurter.
+    }
   }
   const { rate, date } = await ffCurrentRate(from, to);
   return { rate, timestamp: date };
@@ -19,9 +25,11 @@ async function historicalRateForDate(from: string, to: string, date: string): Pr
   if (hasXeCredentials()) {
     try {
       const r = await historicRate(from, to, date, 1);
-      return r.to[0]?.mid ?? null;
+      const mid = r.to[0]?.mid;
+      if (mid != null) return mid;
+      // Xe returned no usable rate — fall through to Frankfurter.
     } catch {
-      return null;
+      // Xe failed (network / 4xx / 5xx / rate-limit) — fall through to Frankfurter.
     }
   }
   return ffHistoricalRate(from, to, date);
@@ -170,7 +178,12 @@ export async function handleMovingAverage(args: {
 }): Promise<string> {
   const periods = args.periods ?? [20, 50, 200];
   const maxPeriod = Math.min(Math.max(...periods), 200);
-  const rates = await fetchHistoricalSeries(args.from, args.to, maxPeriod);
+  // Markets close on weekends/holidays, so N *trading* days of SMA data needs
+  // ~1.5x that many calendar days of history. Without this, SMA(200) never had
+  // enough data points on the daily-close tier and always read "insufficient".
+  // See review 2026-06-29.
+  const calendarDays = Math.ceil(maxPeriod * 1.5);
+  const rates = await fetchHistoricalSeries(args.from, args.to, calendarDays);
 
   if (rates.length < 5) return "Insufficient data to compute moving averages.";
 
@@ -224,7 +237,9 @@ export async function handleOptimalSend(args: {
 
   const { rate: current, timestamp } = await currentRate(args.from, args.to);
   const sorted = [...historicalRates].sort((a, b) => a - b);
-  const below = sorted.filter((r) => r <= current).length;
+  // Count strictly-lower days, matching the "were lower" wording and the
+  // pair-summary tool (which uses `<`). See review 2026-06-29.
+  const below = sorted.filter((r) => r < current).length;
   const percentile = Math.round((below / sorted.length) * 100);
   const mean = historicalRates.reduce((a, b) => a + b, 0) / historicalRates.length;
   const source = hasXeCredentials() ? "Xe" : "Frankfurter/ECB";

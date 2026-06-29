@@ -42,7 +42,11 @@ export async function handler(): Promise<void> {
   const { Items = [] } = await ddb.send(
     new ScanCommand({
       TableName: table,
-      FilterExpression: "active = :t",
+      // `active` is a DynamoDB reserved word — it must be aliased via
+      // ExpressionAttributeNames, otherwise the Scan throws on every run and
+      // the alert pipeline never fires. See review 2026-06-29.
+      FilterExpression: "#active = :t",
+      ExpressionAttributeNames: { "#active": "active" },
       ExpressionAttributeValues: { ":t": { BOOL: true } },
     })
   );

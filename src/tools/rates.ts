@@ -49,6 +49,11 @@ export async function handleConvert(args: {
   to: string;
   amount: number;
 }): Promise<string> {
+  // Guard against 0 / negative / NaN: amount 0 made the displayed rate
+  // `converted / amount` evaluate to NaN. See review 2026-06-29.
+  if (!Number.isFinite(args.amount) || args.amount <= 0) {
+    throw new Error("amount must be a positive number");
+  }
   if (hasXeCredentials()) {
     const result = await convertFrom(args.from, [args.to], args.amount);
     const converted = result.to[0]?.mid;

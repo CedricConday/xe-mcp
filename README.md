@@ -180,7 +180,7 @@ CloudWatch Events (hourly) → alert-scheduler Lambda → DynamoDB → SQS
                                                                   ↓
                                                      alert-processor Lambda → SES email
 DynamoDB: alert configurations (userId, from, to, threshold, direction)
-S3: rate history cache (90-day TTL, reduces external API calls)
+S3: rate-history cache bucket (scaffolded in src/s3-cache.ts; not yet wired into the handler)
 ```
 
 **Credential detection:** `XE_ACCOUNT_ID` + `XE_API_KEY` in env → Xe. Otherwise → Frankfurter. Same fallback in Lambda and locally.
@@ -189,7 +189,7 @@ S3: rate history cache (90-day TTL, reduces external API calls)
 
 ## Stack coverage
 
-Built to match the full-stack requirements stated in Xe.com's developer role descriptions. Every item below has working code in this repo.
+Built to match the full-stack requirements stated in Xe.com's developer role descriptions. Every item below is backed by code in this repo (S3 caching is scaffolded but not yet wired — noted below).
 
 | Requirement | Where it lives |
 |---|---|
@@ -198,7 +198,7 @@ Built to match the full-stack requirements stated in Xe.com's developer role des
 | AWS Lambda | `lambda/handler.ts` — REST API over all 10 tools |
 | AWS SQS | `lambda/alert-scheduler.ts` → publishes; `lambda/alert-processor.ts` → consumes |
 | AWS DynamoDB | `lambda/alert-scheduler.ts` — scans `AlertsTable`; SAM GSI on `userId` |
-| AWS S3 | `src/s3-cache.ts` — rate history cache; bucket in `template.yml` |
+| AWS S3 | `src/s3-cache.ts` — rate-history cache module + bucket in `template.yml` (scaffold; not yet wired into the deployed handler) |
 | SQLite (local) | `src/sqlite-store.ts` — rate history cache (`RATE_DB_PATH`); live in `fetchHistoricalSeries` — cache hits skip API, misses store to DB; same schema works on PostgreSQL |
 | AWS SES | `lambda/alert-processor.ts` — sends email on alert trigger |
 | AWS API Gateway | `template.yml` — wired to `XeMcpFunction` |
