@@ -43,7 +43,7 @@ export async function handler(event: SQSEvent): Promise<void> {
 
     await ses.send(
       new SendEmailCommand({
-        Source: "alerts@xe-mcp.condaydigital.com",
+        Source: "alerts@example.com",
         Destination: { ToAddresses: [alert.email] },
         Message: {
           Subject: { Data: subject },
